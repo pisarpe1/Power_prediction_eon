@@ -1,3 +1,6 @@
 pandas
 matplotlib
 seaborn
+meteostat
+holidays
+numpy

@@ -12,14 +12,22 @@ V souboru data.csv najdete podklady k vypracování úkolu. Jedná se o spotřeb
 Řešení nám zašlete vždy kompletní. Vždy popište, jak jste postupovali a na co jste přišli. Pokud pro zpracování použijete nějaký program, poskytněte i funkční zdrojový kód. 
 
 
-I. Create and activate virtual environment 
-    # Create virtual environment in folder .venv
-    python -m venv .venv
+I. Vytvoření pracovního prostředí pro výpočty.
 
-    # Activate the virtual environment (Windows) + packages installation
-    
+    python -m venv .venv    
     .venv\Scripts\activate
     pip install -r requirements.txt
 
+II. Stanovení vlivů ovlivňující spotřebu energie.
 
+    Faktor	                Vliv na spotřebu	    Zdroj dat
 
+    Teplota	                Silný	                CHMI, OpenWeatherMap, Meteostat
+    Sluneční svit	        Střední/slabý	        CHMI, Meteostat
+    Den v týdnu	            Výrazný	                data.csv
+    Státní svátek / víkend	Výrazný	                OfficeHolidays.com, kalendář
+    Ekonomická aktivita	    Dlouhodobý	            ČSÚ, Eurostat
+    Cena elektřiny	        Dlouhodobý/slabší	    ERÚ, PXE
+
+III. Schromáždění dat
+    Schromážení dostupných relevantních dat. Následný rozbor, filtrace, kontrola, korekce.
