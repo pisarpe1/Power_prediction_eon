@@ -1,3 +1,4 @@
+import os
 from meteostat import Point, Hourly
 from datetime import datetime
 import pandas as pd
@@ -6,8 +7,6 @@ import numpy as np
 
 PLACES = {  # Dictionary of cities with their geographical coordinates for data collection
     'Praha': Point(50.0755, 14.4378),
-    'Brno': Point(49.1951, 16.6068),
-    'Ostrava': Point(49.8209, 18.2625),
     'Plzen': Point(49.7475, 13.3776),
     'Liberec': Point(50.7671, 15.0562),
     'Ceske_Budejovice': Point(48.9745, 14.4743)
@@ -16,59 +15,98 @@ PLACES = {  # Dictionary of cities with their geographical coordinates for data 
 TIMESTART = datetime(2023, 1, 1, 0) # Start time for data collection
 TIMEEND = datetime(2024, 4, 22, 8)  # End time for data collection
 
-class TemperatureData:
+class DataCollector:
+    """
+    A parent class for collecting, processing, and storing various types of data.
+    Attributes:
+        _places (dict): A dictionary containing city names as keys and their geographical coordinates as values.
+        _timestart (datetime): The start time for data collection.
+        _timeend (datetime): The end time for data collection.
+        storage_path (str): The file path where the collected data will be stored.
+    Methods:
+        collect_data():
+            Abstract method to be implemented by child classes for collecting specific types of data.
+        store_data_in_csv():
+            Saves the collected data to a CSV file.
+        data_preview():
+            Prints a preview of the collected data.
+    """
+    def __init__(self, file_name):
+        self._places = PLACES
+        self._timestart = TIMESTART
+        self._timeend = TIMEEND
+        self.storage_path = 'data/external/'
+        self.file_name = file_name
+        self._ensure_directory_exists()
+
+    def collect_data(self):
+        raise NotImplementedError("Subclasses must implement the collect_data method.")
+
+    def store_data_in_csv(self):
+
+        # Save the data to CSV
+        if self.data is not None:
+            self.data.to_csv(os.path.join(self.storage_path, self.file_name), sep=';')
+        else:
+            print("No data to store.")
+
+    def _ensure_directory_exists(self):
+        """
+        Ensures the directory for the given path exists. If not, creates it.
+        """
+        if not os.path.exists(self.storage_path):
+            os.makedirs(self.storage_path)
+
+    def data_preview(self, file_name=None):
+        if self.data is not None:
+            print(f"\nData preview {file_name}:\n {self.data.head()}")
+        else:
+            print(f"No data {file_name} to preview.")
+
+
+class TemperatureData(DataCollector):
     """
     TemperatureData class is responsible for collecting, processing, and storing temperature data 
     for specified locations and time periods. It also provides a preview of the processed data.
     Attributes:
         _places (dict): A dictionary containing city names as keys and their geographical coordinates as values.
-        _timestart (str): The start time for fetching temperature data.
-        _timeend (str): The end time for fetching temperature data.
+        _timestart (datetime): The start time for fetching temperature data.
+        _timeend (datetime): The end time for fetching temperature data.
         temperature_cz (pd.DataFrame): A DataFrame containing temperature data for the specified locations 
                                        and the average temperature across all locations.
     Methods:
         __init__():
             Initializes the TemperatureData object, collects temperature data, stores it in a CSV file, 
             and displays a preview of the data.
-        colect_temperature_data():
+        collect_temperature_data():
             Collects hourly temperature data for the specified locations and time period, calculates the 
             average temperature across all locations, and stores the data in a DataFrame.
         store_temperature_in_csv():
-            Saves the average temperature data to a CSV file named 'prumerna_teplota_CR.csv' in the 'data' directory.
+            Saves the average temperature data to a CSV file named 'temperature_data.csv' in the 'data/external' directory.
         temperature_data_view():
             Prints a preview of the average temperature data.
     """
     def __init__(self):
-        self._places = PLACES
-        self._timestart = TIMESTART
-        self._timeend = TIMEEND
+        self.file_name = 'temperature_data.csv'
+        super().__init__(self.file_name)
         self.unit = '°C'  # Temperature unit
-        self.temperature_cz = self.colect_temperature_data()
-        self.store_temperature_in_csv()
-        self.temperature_data_view()
+        self.data = self.collect_data()
+        self.store_data_in_csv()
+        self.data_preview(self.file_name)
 
-    def colect_temperature_data(self):
-        data_teploty = pd.DataFrame()
+    def collect_data(self):
+        temperature_df = pd.DataFrame()
 
         for city, geo in self._places.items():
             data = Hourly(geo, self._timestart, self._timeend).fetch()
-            data_teploty[city] = data['temp']   # ['°C']
+            temperature_df[city] = data['temp']
 
-        data_teploty['Prumer_CR_teploty'] = data_teploty.mean(axis=1)
+        temperature_df['average'] = temperature_df.mean(axis=1)
 
-        self.temperature_cz = data_teploty
-        
-        return data_teploty
-    
+        return temperature_df
 
-    def store_temperature_in_csv(self):
 
-        self.temperature_cz[['Prumer_CR_teploty']].to_csv('data/prumerna_teplota_CR.csv', sep=';')
-
-    def temperature_data_view(self) -> None:
-        print("\nTemperature data:\n", self.temperature_cz[['Prumer_CR_teploty']].head())
-
-class SunshineData:
+class SunshineData(DataCollector):
     """
     A class to collect, process, and store sunshine data for specified locations.
     Attributes:
@@ -91,103 +129,93 @@ class SunshineData:
     """
 
     def __init__(self):
-        self._places = PLACES
-        self._timestart = TIMESTART
-        self._timeend = TIMEEND
+        self.file_name ='solar_data.csv'
+        super().__init__(self.file_name)
         self.unit = 'min/h'
-        self.sunshine_cz = self.collect_sunshine_data()
-        self.store_sunshine_in_csv()
-        self.sunshine_data_view()
+        self.data = self.collect_data()
+        self.store_data_in_csv()
+        self.data_preview(self.file_name)
 
-    def collect_sunshine_data(self):
+    def collect_data(self):
         sunshine_df = pd.DataFrame()
 
         for city, geo in self._places.items():
             data = Hourly(geo, self._timestart, self._timeend).fetch()
             sunshine_df[city] = data['tsun']
 
-        sunshine_df['Prumer_CR_svit'] = sunshine_df.mean(axis=1)
-        self.sunshine_cz = sunshine_df
+        sunshine_df['average'] = sunshine_df.mean(axis=1)
 
         return sunshine_df
 
-    def store_sunshine_in_csv(self):
-        self.sunshine_cz[['Prumer_CR_svit']].to_csv('data/prumerny_osvit_CR.csv', sep=';')
 
-    def sunshine_data_view(self):
-        print("\nSunshine data:\n", self.sunshine_cz[['Prumer_CR_svit']].head())
-
-class WindData:
+class WindData(DataCollector):
     """
     A class to collect, process, and store wind speed data for specified locations and time periods.
     Attributes:
         _places (dict): A dictionary containing city names as keys and their geographical coordinates as values.
-        _timestart (str): The start time for data collection in ISO 8601 format.
-        _timeend (str): The end time for data collection in ISO 8601 format.
-        wind_cz (pd.DataFrame): A DataFrame containing wind speed data for specified locations and their average.
+        _timestart (datetime): The start time for data collection.
+        _timeend (datetime): The end time for data collection.
+        data (pd.DataFrame): A DataFrame containing wind speed data for specified locations and their average.
     Methods:
-        collect_wind_data():
+        __init__():
+            Initializes the WindData object, collects wind speed data, stores it in a CSV file, 
+            and displays a preview of the data.
+        collect_data():
             Collects wind speed data for specified locations and time periods, calculates the average wind speed
             across all locations, and stores the data in a DataFrame.
-        store_wind_in_csv():
-            Saves the average wind speed data to a CSV file named 'prumerna_rychlost_vetru_CR.csv' in the 'data' directory.
-        wind_data_view():
+        store_data_in_csv():
+            Saves the average wind speed data to a CSV file.
+        data_preview():
             Prints the first few rows of the average wind speed data for visualization.
     """
     def __init__(self):
-        self._places = PLACES
-        self._timestart = TIMESTART
-        self._timeend = TIMEEND
+        self.file_name = 'wind_data.csv'
+        super().__init__(self.file_name)
         self.unit = 'km/h'  # Wind speed unit
-        self.wind_cz = self.collect_wind_data()
-        self.store_wind_in_csv()
-        self.wind_data_view()
+        self.data = self.collect_data()
+        self.store_data_in_csv()
+        self.data_preview(self.file_name)
 
-    def collect_wind_data(self):
+    def collect_data(self):
         wind_df = pd.DataFrame()
 
         for city, geo in self._places.items():
             data = Hourly(geo, self._timestart, self._timeend).fetch()
             wind_df[city] = data['wspd']
 
-        wind_df['Prumer_CR_vitr'] = wind_df.mean(axis=1)
-        self.wind_cz = wind_df
+        wind_df['average'] = wind_df.mean(axis=1)
 
         return wind_df
 
-    def store_wind_in_csv(self):
-        self.wind_cz[['Prumer_CR_vitr']].to_csv('data/prumerna_rychlost_vetru_CR.csv', sep=';')
 
-    def wind_data_view(self):
-        print("\nWind data:\n", self.wind_cz[['Prumer_CR_vitr']].head())
-
-class CalendarData:
+class CalendarData(DataCollector):
     """
     CalendarData class generates and stores calendar information for a specified time range.
     Attributes:
+        _places (dict): Not used in this class, but inherited from DataCollector.
         _timestart (datetime): The start time for the calendar data.
         _timeend (datetime): The end time for the calendar data.
         cz_holidays (holidays.HolidayBase): A list of Czech holidays within the specified time range.
-        calendar_cz (pd.DataFrame): A DataFrame containing calendar information such as day of the week, weekend status, and holiday status.
+        data (pd.DataFrame): A DataFrame containing calendar information such as day of the week, weekend status, and holiday status.
     Methods:
         __init__():
             Initializes the CalendarData object, generates calendar information, stores it as a CSV file, and prints a preview.
-        _generate_calendar_info() -> pd.DataFrame:
+        collect_data() -> pd.DataFrame:
             Generates a DataFrame with calendar information including day of the week, weekend status, and holiday status.
-        _store_calendar_csv():
+        store_data_in_csv():
             Saves the generated calendar information to a CSV file.
-        calendar_preview():
+        data_preview():
             Prints a preview of the generated calendar information.
     """
     def __init__(self):
-        self._timestart = TIMESTART
-        self._timeend = TIMEEND
+        self.file_name = 'calendar_data.csv'
+        super().__init__(self.file_name)
         self.cz_holidays = holidays.CZ(years=range(self._timestart.year, self._timeend.year + 1))
-        self.calendar_cz = self._generate_calendar_info()
-        self._store_calendar_csv()
-        self.calendar_preview()
+        self.data = self.collect_data()
+        self.store_data_in_csv()
+        self.data_preview(self.file_name)
 
-    def _generate_calendar_info(self) -> pd.DataFrame:
+    def collect_data(self) -> pd.DataFrame:
         # Create a time index with hourly steps
         time_index = pd.date_range(start=self._timestart, end=self._timeend, freq='h')
 
@@ -196,13 +224,15 @@ class CalendarData:
         df['day_of_week'] = df.index.dayofweek
         df['is_weekend'] = df['day_of_week'] >= 5
         df['is_holiday'] = np.isin(df.index.date, list(self.cz_holidays))
+
+        # Reset index and rename columns for desired output format
+        df = df.reset_index()
+        df.rename(columns={'index': 'time'}, inplace=True)
+
+        # Set "time" as the index and remove the first column
+        df.set_index('time', inplace=True)
+
         return df
-
-    def _store_calendar_csv(self):
-        self.calendar_cz.to_csv('data/calendar_info.csv', sep=';')
-
-    def calendar_preview(self):
-        print("\nCalendar data:\n", self.calendar_cz.head())
 
 
 """
