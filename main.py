@@ -1,6 +1,7 @@
-from src.data_analyze import merged_data_loader
+
 from src.data_loader import RawData
 from src.data_processing import ProcessedData
+from src.db_loader import EnergyDataDB
 
 
 def collect_data():
@@ -27,21 +28,18 @@ def analyze_data():
     """
     Analyzes the processed data and returns the analysis results.
     """
-    
     print("Analyzing processed data...")
-    analyze_data = merged_data_loader('data/processed/merged_data.csv')
-
+    database = EnergyDataDB()
+    results = database.get_average_consumption_per_year()
+    print(f"Results for year 2023: {results}")
     print("Analysis complete.")
 
 
 def main():
     raw_data = collect_data()
     process_data(raw_data)
-    results = analyze_data()
+    analyze_data()
 
-
-
-    
 
 if __name__ == "__main__":
     main()

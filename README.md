@@ -18,7 +18,7 @@ I. Vytvoření pracovního prostředí pro výpočty.
     .venv\Scripts\activate
     pip install -r requirements.txt
 
-II. Reserch a stanovení vlivů ovlivňující spotřebu energie.
+II. Reserch a stanovení vlivů ovlivňující spotřebu energie. Do výpočtů zahrnu pouze některé faktory ovlivňující cenu.
 
     Faktor	                Vliv na spotřebu	    Zdroj dat
 
