@@ -1,71 +1,111 @@
 import copy
 import pandas as pd
 
-from src.data_loader import RawConsumptionData
+from src.data_loader import RawData
 
 
 class ProcessedData:
-    def __init__(self, raw_data: RawConsumptionData):
-        self.raw_data = raw_data
-        self.data = copy.deepcopy(raw_data.get_raw_data)
+    def __init__(self, raw_data: RawData):
+        self.raw_data = raw_data.get_raw_data() # Store the raw data from RawData instance
+        self.data = self.pick_raw_data()
+        self.rename_average_columns()
+        self.run_data_checkers()
+        self.merged_data = self.merge_raw_data()
+        self.save_merged_data('data/processed/merged_data.csv')
 
-    @property
-    def get_data(self) -> pd.DataFrame:
-        return self.data
-
-    def check_and_handle_duplicate_rows(self):
-        """
-        Identifies and removes duplicate rows from the DataFrame.
-        """
-        print(f"Number of duplicate rows: {self.data.duplicated().sum()}")
-        self.data = self.data.drop_duplicates()
-
-    def check_and_handle_missing_values(self) -> None:
-        """
-        Checks for missing values in the dataset, prints the count of missing values per column,
-        and removes any rows containing missing values from the data.
-        """
+    def pick_raw_data(self) -> dict:
+        data = copy.deepcopy(self.raw_data)
+        data = {
+            'consumption': data['consumption'],
+            'temperature': data['temperature'][['average']],
+            'calendar': data['calendar'],
+            'solar': data['solar'][['average']],
+            'wind': data['wind'][['average']]
+        }
         
-        missing_values = self.get_data.isnull().sum()
-        self.data = self.data.dropna()
-        print("Missing values per column:\n", missing_values)
+        return data
+    
+    def rename_average_columns(self) -> None:
+        """
+        Renames the 'average' columns in the data to more descriptive names.
+        """
+        self.data['consumption'].rename(columns={'Values': 'consumption'}, inplace=True)
+        self.data['temperature'].rename(columns={'average': 'temperature_average'}, inplace=True)
+        self.data['solar'].rename(columns={'average': 'solar_average'}, inplace=True)
+        self.data['wind'].rename(columns={'average': 'wind_average'}, inplace=True)
+        print("Average columns renamed successfully.")
 
-    def check_and_handle_non_numeric_values_in_values_column(self) -> bool:
+    def save_merged_data(self, path: str) -> None:
         """
-        Attempts to convert all values in the 'Values' column to numeric.
-        Non-convertible values are removed from the DataFrame.
-        Returns True if all values are numeric after processing, otherwise False.
+        Saves the merged raw data to a CSV file.
+        Args:
+            path (str): The file path where the merged data will be saved.
         """
-        if 'Values' not in self.data.columns:
-            raise KeyError("Column 'Values' not found in DataFrame.")
-        # Attempt conversion; non-convertible values become NaN
-        self.data['Values'] = pd.to_numeric(self.data['Values'], errors='coerce')
-        # Count non-numeric (now NaN) values
-        non_numeric_count = self.data['Values'].isna().sum()
-        if non_numeric_count > 0:
-            print(f"Removing {non_numeric_count} non-numeric values from 'Values' column.")
-            self.data = self.data.dropna(subset=['Values'])
-        # After cleaning, check if any non-numeric values remain
-        return self.data['Values'].notna().all()
+        self.merged_data.to_csv(path, sep=';')
+        print(f"Merged data saved to {path}.")
+    
+    def merge_raw_data(self) -> pd.DataFrame:
 
-
-    def run_data_checks(self) -> None:
-        """
-        Runs a series of data checks on the DataFrame.
-        Prints the results of each check.
-        """
-        print("\n--- Data Checks ---")
+        # Ensure indices are of the same type before merging
+        self.data['consumption'].index = pd.to_datetime(self.data['consumption'].index)
+        self.data['temperature'].index = pd.to_datetime(self.data['temperature'].index)
+        self.data['solar'].index = pd.to_datetime(self.data['solar'].index)
+        self.data['wind'].index = pd.to_datetime(self.data['wind'].index)
+        self.data['calendar'].index = pd.to_datetime(self.data['calendar'].index)   
         
-        # Check for duplicate rows
-        self.check_and_handle_duplicate_rows()
+        # Merge data based on index
+        merged_data = self.data['consumption'].merge(self.data['temperature'], left_index=True, right_index=True, how="left")
+        merged_data = merged_data.merge(self.data['solar'], left_index=True, right_index=True, how="left")
+        merged_data = merged_data.merge(self.data['wind'], left_index=True, right_index=True, how="left")
+        merged_data = merged_data.merge(self.data['calendar'], left_index=True, right_index=True, how="left")
 
-        # Check for missing values
-        self.check_and_handle_missing_values()
+      
+        return merged_data
+        
+    def check_time_line(self) -> pd.DataFrame:
+        # Check if indices are unique for each dataset and update self.data
+        for key in self.data.keys():
+            if not self.data[key].index.is_unique:
+                print(f"Warning: Duplicate indices in {key.capitalize()}:", self.data[key].index[self.data[key].index.duplicated()])
+                self.data[key] = self.data[key][~self.data[key].index.duplicated()]
+    
+    def check_missing_values(self) -> pd.DataFrame:
+        """
+        Checks for missing data in the datasets and prints warnings if missing values are found.
+        Returns:
+            DataFrame: A DataFrame containing the count of missing values for each column.
+        """
+        missing_data = {key: df.isnull().sum() for key, df in self.data.items()}
+        
+        for key, missing in missing_data.items():
+            if missing.sum() > 0:
+                print(f"Warning: Missing values detected in {key.capitalize()} dataset:")
+                print(missing[missing > 0])
+        
+        return pd.DataFrame(missing_data)
 
-        # Check for non-numeric values in 'Values' column
-        if not self.check_and_handle_non_numeric_values_in_values_column():
-            print("Warning: Non-numeric values found in 'Values' column.")
+    def check_data_type(self) -> None:
+        """
+        Checks if all values in each column of the datasets have the same type.
+        Prints warnings if inconsistent types are found.
+        """
+        for key, df in self.data.items():
+            for column in df.columns:
+                unique_types = df[column].map(type).unique()
+                if len(unique_types) > 1:
+                    print(f"Warning: Column '{column}' in {key.capitalize()} dataset has inconsistent types: {unique_types}")
+                else:
+                    pass
+                    #print(f"Column '{column}' in {key.capitalize()} dataset has consistent type: {unique_types[0]}")
 
-        # Print first few rows
-        print("\nFirst few rows:\n", self.data.head())
+    def run_data_checkers(self):
+        """
+        Runs data checkers to ensure the integrity of the data.
+        """
+        self.check_time_line()
+        self.check_missing_values()
+        self.check_data_type()
+        print("Data checkers completed successfully.")
+        
 
+    
