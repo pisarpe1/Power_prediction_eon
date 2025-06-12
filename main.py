@@ -18,7 +18,8 @@ def main():
     print("Raw data collected successfully.\n")
 
     print("Processing raw data...")
-    processing_data = ProcessedData(raw_data)
+    ProcessedData(raw_data)
+    
     print("Raw data processed successfully.\n")
 
     

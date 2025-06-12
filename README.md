@@ -30,7 +30,7 @@ II. Reserch a stanovení vlivů ovlivňující spotřebu energie.
     Cena elektřiny	        Dlouhodobý/slabší	    ERÚ, PXE
 
 III. Schromáždění dat
-    Schromážení dostupných relevantních dat + návrh lokálního uložení. 
+    Schromážení dostupných relevantních dat + návrh lokálního uložení. Možno vymyslet i sofistikované komplexní databazové uložení. Pro konzistenci zachovám data v .csv místo SQL.
     a) Interní data o spotřebě: "data/raw"
     b) Raw data uložena v nezměnené podobě v "data/external"
     
@@ -45,4 +45,7 @@ IV. Zpracování dat
 
 
 V. Analýza
-    Odhalení trendů a paternů dat.
+    TODO
+
+VI. Vizualizace
+    TODO
