@@ -18,7 +18,7 @@ I. Vytvoření pracovního prostředí pro výpočty.
     .venv\Scripts\activate
     pip install -r requirements.txt
 
-II. Stanovení vlivů ovlivňující spotřebu energie.
+II. Reserch a stanovení vlivů ovlivňující spotřebu energie.
 
     Faktor	                Vliv na spotřebu	    Zdroj dat
 
@@ -30,4 +30,19 @@ II. Stanovení vlivů ovlivňující spotřebu energie.
     Cena elektřiny	        Dlouhodobý/slabší	    ERÚ, PXE
 
 III. Schromáždění dat
-    Schromážení dostupných relevantních dat. Následný rozbor, filtrace, kontrola, korekce.
+    Schromážení dostupných relevantních dat + návrh lokálního uložení. 
+    a) Interní data o spotřebě: "data/raw"
+    b) Raw data uložena v nezměnené podobě v "data/external"
+    
+
+IV. Zpracování dat
+    Inspekce raw interních i externích dat. Následný rozbor, filtrace, kontrola, korekce.
+    (kontrola klíčů, datových typů, chybějících hodnot, atd.) Předpřipravení dat př. externí 
+    data obsahují teploty z několika pozic v čr -> stanovení průměrné teploty v ČR.
+
+    Cílem kroku je mít konzistentní data pro budoucí datamining. Data připravena k analýze
+    uložena do: "data/processed"
+
+
+V. Analýza
+    Odhalení trendů a paternů dat.
