@@ -51,5 +51,8 @@ V. Analýza
         Dále je zde patrný opakující se patern pracovního týdne tedy rozdíl mezi pracovními dny a víkendy.
         V neposledí řadě je zde opakující se pattern každého dne kdy je patrné kolísání spotřeby v průběhu dne.
         Pro demostraci je zobrazen letní a zimní den.
+
+        Je zde možné provést mnoho dalších inspekcí a praktik jako hledání minim, maxim, průměrů. Dále pak krátkodobých a dlouhodobých trendů a aproximací. 
      
 
+VI. Predikce hodnot
