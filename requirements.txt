@@ -4,6 +4,5 @@ seaborn
 meteostat
 holidays
 numpy
-csv
 datetime
 sqlite3
