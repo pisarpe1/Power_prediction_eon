@@ -92,7 +92,7 @@ class TemperatureData(DataCollector):
         self.unit = '°C'  # Temperature unit
         self.data = self.collect_data()
         self.store_data_in_csv()
-        self.data_preview(self.file_name)
+        #self.data_preview(self.file_name)
 
     def collect_data(self):
         temperature_df = pd.DataFrame()
@@ -134,7 +134,7 @@ class SunshineData(DataCollector):
         self.unit = 'min/h'
         self.data = self.collect_data()
         self.store_data_in_csv()
-        self.data_preview(self.file_name)
+        #self.data_preview(self.file_name)
 
     def collect_data(self):
         sunshine_df = pd.DataFrame()
@@ -174,7 +174,7 @@ class WindData(DataCollector):
         self.unit = 'km/h'  # Wind speed unit
         self.data = self.collect_data()
         self.store_data_in_csv()
-        self.data_preview(self.file_name)
+        #self.data_preview(self.file_name)
 
     def collect_data(self):
         wind_df = pd.DataFrame()
@@ -213,7 +213,7 @@ class CalendarData(DataCollector):
         self.cz_holidays = holidays.CZ(years=range(self._timestart.year, self._timeend.year + 1))
         self.data = self.collect_data()
         self.store_data_in_csv()
-        self.data_preview(self.file_name)
+        #self.data_preview(self.file_name)
 
     def collect_data(self) -> pd.DataFrame:
         # Create a time index with hourly steps

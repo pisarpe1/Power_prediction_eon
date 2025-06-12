@@ -3,19 +3,26 @@ from src.data_loader import RawData
 from src.data_processing import ProcessedData
 
 
-temperature_data = TemperatureData()
-print(f"Temperature data length: {len(temperature_data.data)}")
+def colect_data():
+    """
+    Collects data from various sources and returns a dictionary containing the data.
+    """
+    raw_data = RawData()
 
-sunshine_data = SunshineData()
-print(f"Sunshine data length: {len(sunshine_data.data)}")
-wind_data = WindData()
-print(f"Wind data length: {len(wind_data.data)}")
-calendar_data = CalendarData()
-print(f"Calendar data length: {len(calendar_data.data)}")
+    return raw_data
 
-raw_data = RawData()
 
-"""processing_data = ProcessedData(raw_data)
-print(f"Processed data length: {len(processing_data.get_data)}")"""
+def main():
+    print("\nStarting data processing...")
+    raw_data = colect_data()
+    print("Raw data collected successfully.\n")
 
+    print("Processing raw data...")
+    processing_data = ProcessedData(raw_data)
+    print("Raw data processed successfully.\n")
+
+    
+
+if __name__ == "__main__":
+    main()
 

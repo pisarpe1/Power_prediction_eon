@@ -1,5 +1,7 @@
 import pandas as pd
 
+from src.data_colector import CalendarData, SunshineData, TemperatureData, WindData
+
 
 class RawData:
     """
@@ -34,17 +36,30 @@ class RawData:
             Public method to retrieve the raw calendar data.
     """
     def __init__(self):
+        # collect data from external sources and store in external data folder
+        TemperatureData()
+        SunshineData()
+        WindData()
+        CalendarData()
+
         self.raw_consumption_data = self._consumption_data_loader('data/raw/consumption_data.csv')
         self.raw_temperatur_data = self._temperatur_data_loader('data/external/temperature_data.csv')
         self.raw_calendar_data = self._calendar_data_loader('data/external/calendar_data.csv')
         self.raw_solar_data = self._solar_data_loader('data/external/solar_data.csv')
         self.raw_wind_data = self._wind_data_loader('data/external/wind_data.csv')
-
+        self.raw_data = {
+            'consumption': self.raw_consumption_data,
+            'temperature': self.raw_temperatur_data,
+            'calendar': self.raw_calendar_data,
+            'solar': self.raw_solar_data,
+            'wind': self.raw_wind_data
+        }
 
     def _consumption_data_loader(self, path: str) -> pd.DataFrame:
         try:
             load_data = pd.read_csv(path, sep=';', parse_dates=['Date'], dayfirst=True)
-            load_data.set_index('Date', inplace=True)
+            load_data.rename(columns={'Date': 'datetime'}, inplace=True)
+            load_data.set_index('datetime', inplace=True)
             print(f"Data from {path} successfully loaded.")
 
         except FileNotFoundError:
@@ -62,7 +77,8 @@ class RawData:
     def _temperatur_data_loader(self, path: str) -> pd.DataFrame:
         try:
             load_data = pd.read_csv(path, sep=';', parse_dates=['time'], dayfirst=True)
-            load_data.set_index('time', inplace=True)
+            load_data.rename(columns={'time': 'datetime'}, inplace=True)
+            load_data.set_index('datetime', inplace=True)
             print(f"Data from {path} successfully loaded.")
 
         except FileNotFoundError:
@@ -80,7 +96,8 @@ class RawData:
     def _calendar_data_loader(self, path: str) -> pd.DataFrame:
         try:
             load_data = pd.read_csv(path, sep=';', parse_dates=['time'], dayfirst=True)
-            load_data.set_index('time', inplace=True)
+            load_data.rename(columns={'time': 'datetime'}, inplace=True)
+            load_data.set_index('datetime', inplace=True)
             print(f"Data from {path} successfully loaded.")
 
         except FileNotFoundError:
@@ -98,7 +115,8 @@ class RawData:
     def _solar_data_loader(self, path: str) -> pd.DataFrame:
         try:
             load_data = pd.read_csv(path, sep=';', parse_dates=['time'], dayfirst=True)
-            load_data.set_index('time', inplace=True)
+            load_data.rename(columns={'time': 'datetime'}, inplace=True)
+            load_data.set_index('datetime', inplace=True)
             print(f"Data from {path} successfully loaded.")
 
         except FileNotFoundError:
@@ -116,7 +134,8 @@ class RawData:
     def _wind_data_loader(self, path: str) -> pd.DataFrame:
         try:
             load_data = pd.read_csv(path, sep=';', parse_dates=['time'], dayfirst=True)
-            load_data.set_index('time', inplace=True)
+            load_data.rename(columns={'time': 'datetime'}, inplace=True)
+            load_data.set_index('datetime', inplace=True)
             print(f"Data from {path} successfully loaded.)")
 
         except FileNotFoundError:
@@ -146,4 +165,8 @@ class RawData:
     
     def get_raw_calendar_data(self) -> pd.DataFrame:
         return self.raw_calendar_data
+    
+    def get_raw_data(self) -> dict:
+        return self.raw_data
+    
 
