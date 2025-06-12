@@ -152,6 +152,45 @@ class EnergyDataDB:
                 ORDER BY year, month, day
             """)
         return self.c.fetchall()
+    def get_consumption_per_hour(self, year=None, month=None, day=None):
+        """
+        Returns total consumption per hour as a list of (year, month, day, hour, total_consumption) tuples.
+        If 'year', 'month', and 'day' are specified, returns total consumption only for that hour of that day.
+        If 'year' and 'month' are specified, returns total consumption for each hour of that month.
+        If only 'year' is specified, returns total consumption for each hour of that year.
+        """
+        if year is not None and month is not None and day is not None:
+            self.c.execute("""
+                SELECT year, month, day, hour, SUM(consumption) as total_consumption
+                FROM energy_data
+                WHERE year = ? AND month = ? AND day = ?
+                GROUP BY year, month, day, hour
+                ORDER BY year, month, day, hour
+            """, (year, month, day))
+        elif year is not None and month is not None:
+            self.c.execute("""
+                SELECT year, month, day, hour, SUM(consumption) as total_consumption
+                FROM energy_data
+                WHERE year = ? AND month = ?
+                GROUP BY year, month, day, hour
+                ORDER BY year, month, day, hour
+            """, (year, month))
+        elif year is not None:
+            self.c.execute("""
+                SELECT year, month, day, hour, SUM(consumption) as total_consumption
+                FROM energy_data
+                WHERE year = ?
+                GROUP BY year, month, day, hour
+                ORDER BY year, month, day, hour
+            """, (year,))
+        else:
+            self.c.execute("""
+                SELECT year, month, day, hour, SUM(consumption) as total_consumption
+                FROM energy_data
+                GROUP BY year, month, day, hour
+                ORDER BY year, month, day, hour
+            """)
+        return self.c.fetchall()    
 
     # Time interval average consumption methods
     def get_average_consumption_per_year(self):
@@ -323,6 +362,76 @@ class EnergyDataDB:
                 FROM energy_data
                 GROUP BY year, month
                 ORDER BY year, month
+            """)
+        return self.c.fetchall()
+
+    def get_average_temperature_per_day(self, year=None, month=None):
+        """
+        Returns average temperature per day as a list of (year, month, day, average_temperature) tuples.
+        If 'year' and 'month' are specified, returns averages for each day in that month.
+        If only 'year' is specified, returns averages for each day in that year.
+        """
+        if year is not None and month is not None:
+            self.c.execute("""
+                SELECT year, month, day, AVG(temperature_average) as average_temperature
+                FROM energy_data
+                WHERE year = ? AND month = ?
+                GROUP BY year, month, day
+                ORDER BY year, month, day
+            """, (year, month))
+        elif year is not None:
+            self.c.execute("""
+                SELECT year, month, day, AVG(temperature_average) as average_temperature
+                FROM energy_data
+                WHERE year = ?
+                GROUP BY year, month, day
+                ORDER BY year, month, day
+            """, (year,))
+        else:
+            self.c.execute("""
+                SELECT year, month, day, AVG(temperature_average) as average_temperature
+                FROM energy_data
+                GROUP BY year, month, day
+                ORDER BY year, month, day
+            """)
+        return self.c.fetchall()
+    def get_average_temperature_per_hour(self, year=None, month=None, day=None):
+        """
+        Returns average temperature per hour as a list of (year, month, day, hour, average_temperature) tuples.
+        If 'year', 'month', and 'day' are specified, returns averages for each hour of that day.
+        If 'year' and 'month' are specified, returns averages for each hour of that month.
+        If only 'year' is specified, returns averages for each hour of that year.
+        """
+        if year is not None and month is not None and day is not None:
+            self.c.execute("""
+                SELECT year, month, day, hour, AVG(temperature_average) as average_temperature
+                FROM energy_data
+                WHERE year = ? AND month = ? AND day = ?
+                GROUP BY year, month, day, hour
+                ORDER BY year, month, day, hour
+            """, (year, month, day))
+        elif year is not None and month is not None:
+            self.c.execute("""
+                SELECT year, month, day, hour, AVG(temperature_average) as average_temperature
+                FROM energy_data
+                WHERE year = ? AND month = ?
+                GROUP BY year, month, day, hour
+                ORDER BY year, month, day, hour
+            """, (year, month))
+        elif year is not None:
+            self.c.execute("""
+                SELECT year, month, day, hour, AVG(temperature_average) as average_temperature
+                FROM energy_data
+                WHERE year = ?
+                GROUP BY year, month, day, hour
+                ORDER BY year, month, day, hour
+            """, (year,))
+        else:
+            self.c.execute("""
+                SELECT year, month, day, hour, AVG(temperature_average) as average_temperature
+                FROM energy_data
+                GROUP BY year, month, day, hour
+                ORDER BY year, month, day, hour
             """)
         return self.c.fetchall()
     

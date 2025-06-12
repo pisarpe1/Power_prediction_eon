@@ -45,7 +45,11 @@ IV. Zpracování dat
 
 
 V. Analýza
-    TODO
+    Ve složce outputs jsou vygenerovány jednoduché grafy zkterých jsou patrné cykly a externí vlivy v tomto případě teplota.
+    1) 
+        v čr je patrný opakující se patern na roční úrovni kdy velkám faktorem je například oční období (teplota).
+        Dále je zde patrný opakující se patern pracovního týdne tedy rozdíl mezi pracovními dny a víkendy.
+        V neposledí řadě je zde opakující se pattern každého dne kdy je patrné kolísání spotřeby v průběhu dne.
+        Pro demostraci je zobrazen letní a zimní den.
+     
 
-VI. Vizualizace
-    TODO
