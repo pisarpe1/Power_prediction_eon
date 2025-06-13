@@ -48,15 +48,13 @@ def analyze_data():
 
 def predicted_data():
     
-    print("Predicting data...")
+    print("Creating prediction model data...")
     predictor = EnergyPredictor(db_path="data/database.db")
+    predictor.show_model_info()
+    print("Training the model done")
 
-    predictor.load_data()
-    predictor.preprocess()
-    predictor.split_data()
-    predictor.train()
-    mae = predictor.evaluate()
-    predictor.save_model()
+    
+
 
 
 def main():

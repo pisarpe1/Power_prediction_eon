@@ -12,6 +12,11 @@ class EnergyPredictor:
         self.df = None
         self.model = XGBRegressor()
         self.X_train = self.X_test = self.y_train = self.y_test = None
+        self.load_data()
+        self.preprocess()
+        self.split_data()
+        self.train()
+        self.save_model()
 
     def load_data(self):
         conn = sqlite3.connect(self.db_path)
@@ -56,9 +61,18 @@ class EnergyPredictor:
         predictions = self.model.predict(new_data)
         return predictions
     
-    def save_model(self, filename='energy_model.pkl'):
+    def save_model(self, filename='outputs/energy_model.pkl'):
         joblib.dump(self.model, filename)
         print(f"Model uložen do souboru: {filename}")
-    def load_model(self, filename='energy_model.pkl'):
+
+    def load_model(self, filename='outputs/energy_model.pkl'):
         self.model = joblib.load(filename)
         print(f"Model načten ze souboru: {filename}")
+
+    def show_model_info(self):
+        print("Model Info:")
+        print(f"  - Model type: {type(self.model).__name__}")
+        print(f"  - Number of features: {self.X_train.shape[1]}")
+        print(f"  - Training samples: {self.X_train.shape[0]}")
+        print(f"  - Test samples: {self.X_test.shape[0]}")
+        print(f"  - Features: {list(self.X_train.columns)}")
