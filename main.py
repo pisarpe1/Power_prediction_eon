@@ -2,8 +2,9 @@
 from src.data_loader import RawData
 from src.data_processing import ProcessedData
 from src.db_loader import EnergyDataDB
-from src.data_prediction import EnergyPredictor
+from src.data_prediction import EnergyPredictor, predicted_last_week_data
 from src.data_analyze import show_month_data, show_day_data, show_hourly_winter_data, show_hourly_summer_data, show_hourly_winter_workday_data, show_hourly_summer_workday_data
+import pandas as pd
 import matplotlib.pyplot as plt
 
 
@@ -53,8 +54,10 @@ def predicted_data():
     predictor.show_model_info()
     print("Training the model done")
 
+    print("predicting last week data...")
+    predicted_last_week_data()
+    print("Predicted data for last week created successfully.\n")
     
-
 
 
 def main():
