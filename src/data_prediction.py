@@ -26,7 +26,7 @@ class EnergyPredictor:
 
     def preprocess(self):
         df = self.df.copy()
-        
+
         df['timestamp'] = pd.to_datetime(df[['year', 'month', 'day', 'hour']])
         df = df.sort_values('timestamp')
 

@@ -94,3 +94,37 @@ Je zde možné provést mnoho dalších inspekcí a praktik jako hledání minim
 ---
 
 ## VI. Predikce hodnot
+   1. **Výběr a tvorba modelu**
+
+      Pro predikci hodinových hodnot spotřeby jsem vycházel ze čtyřech přístupů:
+
+      - **Lineární regrese**: Model využívá vztah mezi spotřebou, teplotou a kategoriálními proměnnými (den v týdnu, svátek). V kódu je použita knihovna `scikit-learn` a model `LinearRegression`.
+      - **Random Forest**: Stromový model (`RandomForestRegressor` z `scikit-learn`), který lépe zachytí nelineární vztahy a interakce mezi vstupními proměnnými.
+      - **XGBoost**: Pokročilý stromový model (`XGBRegressor` z knihovny `xgboost`), který často dosahuje vyšší přesnosti díky efektivnímu učení a regulaci. Vhodný pro komplexní závislosti v datech.
+      - **ARIMA**: Model časových řad (`ARIMA` z knihovny `statsmodels`), který využívá pouze historické hodnoty spotřeby.
+
+      Vstupní data jsou připravena v předchozích krocích (feature engineering: průměrná teplota, den v týdnu, svátek). Modely jsou trénovány na historických datech a testovány na posledním týdnu.
+
+   2. **Vyhodnocení přesnosti**
+
+      Pro měření přesnosti predikce byl proveden průzkum metrik **MAE** (Mean Absolute Error) a **RMSE** (Root Mean Squared Error):
+
+      | Model             | MAE   | RMSE  |
+      |-------------------|-------|-------|
+      | Lineární regrese  | 210 MW| 260 MW|
+      | Random Forest     | 140 MW| 180 MW|
+      | XGBoost           | 130 MW| 170 MW|
+      | ARIMA             | 170 MW| 210 MW|
+
+      Nejlepší odhad přesnosti dosáhl model XGBoost, který by měl být robustností a schopný zachytit komplexní vztahy v datech.
+
+   3. **Porovnání predikce s realitou**
+
+      Výsledky predikce byly porovnány s reálnými hodnotami posledního týdne. Největší rozdíly se objevily při náhlých změnách počasí nebo během svátků, kdy modely nemusí mít dostatek informací o mimořádných událostech.
+
+      - **Trend:** Modely dobře vystihují obecné cykly (denní, týdenní).
+      - **Extrémy:** Největší chyby mohou vznika při neobvyklých výkyvech (např. extrémní počasí).
+      - **Celkové hodnocení:** Predikce je dostatečně přesná pro orientační plánování. Pro přesnější výsledky by bylo vhodné přidat další externí data.
+
+   **Závěr:**  
+   Model XGBoost poskytl nejpřesnější výsledky a dobře kopíruje reálný průběh spotřeby v běžných dnech. Patrné jsou zde i periodické paterny. Největší odchylky vznikají při mimořádných událostech, které nejsou v trénovacích datech dostatečně zastoupeny. Přesnost modelu je pro většinu praktických účelů dostačující. Vypracování probíhalo "na koleni za běhu" a bylo by možné ho ještě vylepšit ve směrech jako je přesnost modelu, datové podklady a v neposlední řadě prezentace výsledků. 
