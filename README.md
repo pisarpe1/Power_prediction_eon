@@ -21,7 +21,17 @@ V souboru `data.csv` najdete podklady k vypracování úkolu. Jedná se o spotř
 python -m venv .venv    
 .venv\Scripts\activate
 pip install -r requirements.txt
+python main.py
 ```
+Po spuštění `main.py` dojde k následujícím krokům:
+
+1. **Načtení a příprava dat:** Skript načte vstupní data o spotřebě a externí data (např. teploty), provede jejich očištění a přípravu pro analýzu.
+2. **Analýza a vizualizace:** Vygenerují se grafy znázorňující časové řady spotřeby a vlivy externích faktorů (např. teploty) a uloží se do složky `outputs`.
+3. **Trénování a testování modelů:** Skript vytvoří několik predikčních modelů (Lineární regrese, Random Forest, XGBoost, ARIMA), natrénuje je na historických datech a otestuje na posledním týdnu.
+4. **Vyhodnocení výsledků:** Vypočítají se metriky přesnosti (MAE, RMSE) pro jednotlivé modely a výsledky se zobrazí v konzoli.
+5. **Uložení predikcí:** Výsledné predikce a porovnání s reálnými hodnotami jsou uloženy do výstupních souborů ve složce `outputs`.
+
+Celý proces je automatizovaný a po spuštění `main.py` získáte jak grafické výstupy, tak i vyhodnocení přesnosti predikčních modelů.
 
 ---
 
