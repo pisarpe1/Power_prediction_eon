@@ -2,7 +2,7 @@
 from src.data_loader import RawData
 from src.data_processing import ProcessedData
 from src.db_loader import EnergyDataDB
-from src.data_prediction import DataPredictor
+from src.data_prediction import EnergyPredictor
 from src.data_analyze import show_month_data, show_day_data, show_hourly_winter_data, show_hourly_summer_data, show_hourly_winter_workday_data, show_hourly_summer_workday_data
 import matplotlib.pyplot as plt
 
@@ -47,21 +47,23 @@ def analyze_data():
 
 
 def predicted_data():
-    """
-    Placeholder function for future data prediction functionality.
-    """
-    predicted_data = DataPredictor(model=None)  # Replace 'model=None' with actual model initialization
-    return predicted_data
-
-
     
+    print("Predicting data...")
+    predictor = EnergyPredictor(db_path="data/database.db")
+
+    predictor.load_data()
+    predictor.preprocess()
+    predictor.split_data()
+    predictor.train()
+    mae = predictor.evaluate()
+    predictor.save_model()
 
 
 def main():
     raw_data = collect_data()
     process_data(raw_data)
-    database = analyze_data()
-    predicted_data = predicted_data(database)
+    analyze_data()
+    predicted_data()
 
 
 if __name__ == "__main__":

@@ -5,3 +5,5 @@ meteostat
 holidays
 numpy
 datetime
+scikit-learn
+xgboost

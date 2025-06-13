@@ -1,51 +1,64 @@
 import sqlite3
 import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import mean_absolute_error
+from xgboost import XGBRegressor
+import joblib
 
-
-
-class DataPredictor:
-    def __init__(self, model, db_path='database.db', table_name='merged_data'):
-        """
-        model: A trained model object that implements a .predict() method (e.g., scikit-learn model).
-        db_path: Path to the SQLite database file.
-        table_name: Name of the table containing the data.
-        """
-        self.model = model
+class EnergyPredictor:
+    def __init__(self, db_path, table_name='energy_data'):
         self.db_path = db_path
         self.table_name = table_name
-        self.data = self._load_data()
+        self.df = None
+        self.model = XGBRegressor()
+        self.X_train = self.X_test = self.y_train = self.y_test = None
 
-    def _load_data(self):
+    def load_data(self):
         conn = sqlite3.connect(self.db_path)
-        df = pd.read_sql_query(f"SELECT * FROM {self.table_name}", conn)
+        self.df = pd.read_sql_query(f"SELECT * FROM {self.table_name}", conn)
         conn.close()
-        return df
+        print("Data načtena")
 
-    def predict(self, input_data):
-        """
-        Makes a prediction using the trained model.
-        input_data: DataFrame or array-like structure with features for prediction.
-        """
-        return self.model.predict(input_data)
+    def preprocess(self):
+        df = self.df.copy()
+        # Vytvoření timestampu
+        df['timestamp'] = pd.to_datetime(df[['year', 'month', 'day', 'hour']])
+        df = df.sort_values('timestamp')
+        # Odstranění nepoužitelných sloupců
+        X = df.drop(columns=['consumption', 'timestamp'])
+        y = df['consumption']
+        # Odstranění nečíselných sloupců
+        X = X.select_dtypes(include=['number', 'bool', 'category'])
+        self.X = X
+        self.y = y
+        print("Data předzpracována")
 
-    def predict_last_week_and_compare(self, datetime_col='datetime', target_col='consumption'):
-        """
-        Predicts consumption for the last week and compares with actual values.
-        Returns a DataFrame with actual and predicted values.
-        """
-        df = self.data.copy()
-        df[datetime_col] = pd.to_datetime(df[datetime_col])
-        last_week = df[datetime_col].max() - pd.Timedelta(days=7)
-        mask = df[datetime_col] > last_week
-        last_week_data = df[mask]
+    def split_data(self, test_size=0.2):
+        self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(
+            self.X, self.y, test_size=test_size, shuffle=False
+        )
+        print("Data rozdělena na trénovací a testovací sady")
 
-        features = last_week_data.drop(columns=[target_col, datetime_col])
-        actual = last_week_data[target_col].reset_index(drop=True)
-        predicted = pd.Series(self.model.predict(features))
+    def train(self):
+        self.model.fit(self.X_train, self.y_train)
+        print("Model natrénován")
 
-        comparison = pd.DataFrame({
-            'datetime': last_week_data[datetime_col].reset_index(drop=True),
-            'actual': actual,
-            'predicted': predicted
-        })
-        return comparison
+    def evaluate(self):
+        y_pred = self.model.predict(self.X_test)
+        mae = mean_absolute_error(self.y_test, y_pred)
+        print(f" MAE (Mean Absolute Error): {mae:.2f}")
+        return mae
+
+    def predict(self, new_data):
+        """
+        new_data: DataFrame se stejnou strukturou jako X (bez 'consumption' a 'timestamp')
+        """
+        predictions = self.model.predict(new_data)
+        return predictions
+    
+    def save_model(self, filename='energy_model.pkl'):
+        joblib.dump(self.model, filename)
+        print(f"Model uložen do souboru: {filename}")
+    def load_model(self, filename='energy_model.pkl'):
+        self.model = joblib.load(filename)
+        print(f"Model načten ze souboru: {filename}")
